@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# index artifacts and downloaded datasets
+*.faiss
+/idx/
+benchmarks/data/
+benchmarks/idx_*/

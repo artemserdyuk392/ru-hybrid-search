@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ru-hybrid-search"
+version = "0.1.0"
+description = "Hybrid BM25 + dense retrieval for Russian text corpora"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Artem Serdyuk" }]
+keywords = ["search", "bm25", "dense-retrieval", "russian", "rrf", "hybrid"]
+dependencies = [
+    "rank-bm25>=0.2.2",
+    "nltk>=3.8",
+    "sentence-transformers>=2.2",
+    "faiss-cpu>=1.7",
+    "numpy>=1.23",
+    "tqdm>=4.64",
+]
+
+[project.optional-dependencies]
+bench = ["datasets>=2.14"]
+dev = ["pytest>=7.0", "ruff>=0.4"]
+
+[project.scripts]
+ruhybrid = "ruhybrid.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["ruhybrid*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
