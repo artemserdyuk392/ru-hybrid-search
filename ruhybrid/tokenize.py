@@ -68,7 +68,8 @@ def _base_tokens(text: str, ngram_size: int) -> list[str]:
         # bridge the stemmer's split of verb/noun pairs (ускорить/ускорение)
         # via shared character n-grams; only for long Russian words, since
         # the stemmer already handles English inflection and ngrams just bloat.
-        if len(word) >= _NGRAM_MIN_LEN and _CYRILLIC.search(word):
+        # ngram_size <= 0 turns the bridge off (used for the stem-only baseline).
+        if ngram_size > 0 and len(word) >= _NGRAM_MIN_LEN and _CYRILLIC.search(word):
             tokens.extend(_NGRAM_PREFIX + g for g in _char_ngrams(word, ngram_size))
     return tokens
 
