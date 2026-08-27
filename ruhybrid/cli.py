@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from pathlib import Path
 
 from ruhybrid.chunker import chunk_document
 from ruhybrid.index import DEFAULT_MODEL, HybridIndex, IndexConfig
