@@ -29,7 +29,7 @@ class HybridIndex:
         self,
         chunks: list[Chunk],
         tokenized: list[list[str]],
-        bm25: BM25Okapi,
+        bm25: BM25Okapi | None,
         config: IndexConfig,
         faiss_index=None,
     ):
@@ -47,7 +47,7 @@ class HybridIndex:
             tokenize_document(c.text, config.ngram_size)
             for c in tqdm(chunks, desc="tokenize", unit="chunk")
         ]
-        bm25 = BM25Okapi(tokenized)
+        bm25 = BM25Okapi(tokenized) if tokenized else None
         index = cls(chunks, tokenized, bm25, config)
         if config.dense:
             index._build_dense()
@@ -76,12 +76,16 @@ class HybridIndex:
     def _build_dense(self) -> None:
         import faiss
 
+        # TODO: IndexFlatIP is a brute-force scan; switch to IVF or HNSW to
+        # scale past roughly a million chunks.
         embs = self._encode([c.text for c in self.chunks], "passage: ")
         faiss_index = faiss.IndexFlatIP(embs.shape[1])
         faiss_index.add(embs)
         self.faiss_index = faiss_index
 
     def search_sparse(self, query: str, n: int) -> list[int]:
+        if self.bm25 is None:
+            return []
         tokens = tokenize_query(query, self.config.ngram_size)
         if not tokens:
             return []
@@ -116,7 +120,7 @@ class HybridIndex:
         config = IndexConfig(**_read_json(p / "config.json"))
         chunks = [Chunk.from_dict(d) for d in _read_json(p / "chunks.json")]
         tokenized = _read_json(p / "tokenized.json")
-        bm25 = BM25Okapi(tokenized)
+        bm25 = BM25Okapi(tokenized) if tokenized else None
         faiss_index = None
         dense_path = p / "dense.faiss"
         if load_dense and dense_path.exists():

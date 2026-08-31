@@ -1,9 +1,8 @@
 """Benchmark the five retrieval configurations on the Russian MIRACL dev set.
 
-The evaluation pool is the union of the positive and negative passages that
-MIRACL ships inline with each dev query, so no multi-GB corpus download is
-needed. This is a shared-pool benchmark, not full-corpus retrieval; see
-results.md for what that means for the numbers.
+The pool is the positive and negative passages MIRACL ships inline with each
+dev query, so no multi-GB corpus download is needed. It is a shared-pool
+benchmark, not full-corpus retrieval; see results.md for what that means.
 """
 
 from __future__ import annotations

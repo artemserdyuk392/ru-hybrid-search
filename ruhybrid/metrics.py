@@ -32,7 +32,10 @@ def recall_at_k(ranked: list, relevant, k: int) -> float:
 
 def ndcg_at_k(ranked: list, relevant, k: int) -> float:
     gains = [_gain(relevant, doc_id) for doc_id in ranked[:k]]
-    idcg = _dcg(_ideal_gains(relevant))
+    # the ideal DCG is over the top-k ideal gains, not every relevant doc,
+    # otherwise a perfect ranking scores below 1.0 whenever there are more
+    # than k relevant documents.
+    idcg = _dcg(_ideal_gains(relevant)[:k])
     if idcg == 0:
         return 0.0
     return _dcg(gains) / idcg

@@ -14,3 +14,8 @@ def test_ndcg_perfect_beats_shuffled_and_zero_without_relevant():
     assert math.isclose(ndcg_at_k([1, 2, 3], {1, 2, 3}, 10), 1.0)
     assert ndcg_at_k([1, 8, 9], {1}, 10) > ndcg_at_k([8, 9, 1], {1}, 10)
     assert ndcg_at_k([1, 2, 3], set(), 10) == 0.0
+
+
+def test_ndcg_idcg_truncated_to_k_when_relevant_exceeds_k():
+    # perfect ranking must score 1.0 even with more relevant docs than k
+    assert math.isclose(ndcg_at_k([1, 2, 3, 4, 5], {1, 2, 3, 4, 5}, 2), 1.0)

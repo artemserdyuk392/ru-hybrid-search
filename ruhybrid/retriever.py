@@ -48,13 +48,17 @@ def reciprocal_rank_fusion(
 
 
 def _candidate_count(top_k: int) -> int:
-    return min(200, top_k * 4)
+    # pull more candidates than requested from each method so fusion can rescue
+    # a document one side ranks deep; the floor of 30 matters for small top_k
+    return max(30, min(200, top_k * 4))
 
 
 class HybridRetriever:
     def __init__(self, index: HybridIndex, k: int = RRF_K):
         self.index = index
         self.k = k
+        # TODO: RRF weights both methods equally; expose per-method weights for
+        # corpora where one side is clearly stronger.
 
     def search(self, query: str, top_k: int = 5) -> list[SearchHit]:
         if not query or not query.strip():
