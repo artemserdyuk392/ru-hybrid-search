@@ -41,9 +41,10 @@ and "ускорение" to "ускорен", which never match. The shared 4-gr
 
 ## Benchmark
 
-Recall@100 and nDCG@10 on the Russian MIRACL dev pool, five configurations.
-Not run yet. Reproduce with `python benchmarks/run.py --subset 200` (the script
-writes real numbers, hardware and timings into `benchmarks/results.md`).
+Recall@100 and nDCG@10 on a Russian MIRACL dev sample, five configurations.
+Not run yet. Reproduce with `python benchmarks/run.py` (defaults: 100 queries,
+a 20000-document corpus); it writes real numbers, hardware and timings into
+`benchmarks/results.md`.
 
 | config | Recall@100 | nDCG@10 |
 | --- | --- | --- |
@@ -53,9 +54,10 @@ writes real numbers, hardware and timings into `benchmarks/results.md`).
 | hybrid-stem | - | - |
 | hybrid-stem+ngram | - | - |
 
-The pool is the positive and negative passages MIRACL ships inline with each
-dev query, not the full 9.5M passage corpus, so the numbers compare
-configurations against each other rather than the MIRACL leaderboard.
+The corpus is every qrels document of the evaluated queries plus random
+distractor passages drawn from the dev split, not the full 9.5M passage corpus,
+so the numbers compare configurations against each other rather than the MIRACL
+leaderboard.
 
 ## Install
 
@@ -63,9 +65,17 @@ configurations against each other rather than the MIRACL leaderboard.
 pip install ru-hybrid-search
 ```
 
+From source, in a virtualenv:
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -e .
+```
+
 Dense retrieval pulls in sentence-transformers and faiss-cpu and downloads
 `intfloat/multilingual-e5-small` on first use. For the benchmark also install
-the extra: `pip install "ru-hybrid-search[bench]"`.
+the extra: `pip install -e ".[bench]"`.
 
 ## Usage
 
@@ -103,7 +113,11 @@ The qrels file for `bench` is JSONL, one object per query:
 - Tokenization: lowercase, normalize ё to е, split on non-alphanumerics, drop
   nltk stopwords, then Snowball-stem each word using the stemmer for its
   alphabet. For Russian words of length >= 5 it additionally emits character
-  n-grams (default size 4), tagged so they never collide with real stems.
+  n-grams (default size 4). Each n-gram is prefixed with a "#" marker before it
+  enters the index. Without the marker a 4-gram could equal the stem of some
+  short word, so a query n-gram would match that unrelated stem and fire a false
+  BM25 hit. The prefix keeps the n-gram space and the stem space disjoint, so an
+  n-gram only ever matches another n-gram.
 - Sparse: `rank_bm25.BM25Okapi` over the tokenized chunks.
 - Dense: `intfloat/multilingual-e5-small` with the required `passage: ` and
   `query: ` prefixes, normalized vectors in a FAISS `IndexFlatIP`, so inner

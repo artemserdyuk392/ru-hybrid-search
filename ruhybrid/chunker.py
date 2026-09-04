@@ -9,8 +9,6 @@ MAX_CHARS = 1500
 OVERLAP = 200
 
 _PARAGRAPH_RE = re.compile(r"\n\s*\n")
-# TODO: this also splits on abbreviations like "т.д." and "т.е."; a proper
-# sentence segmenter would not, but it is good enough for chunk boundaries.
 _SENTENCE_RE = re.compile(r"(?<=[.!?])\s+")
 
 

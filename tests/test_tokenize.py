@@ -37,3 +37,7 @@ def test_ngram_size_zero_disables_ngrams():
     tokens = tokenize_document("ускорение", ngram_size=0)
     assert "ускорен" in tokens
     assert not _has_ngram(tokens)
+
+
+def test_stopwords_are_removed():
+    assert tokenize_document("и в на под") == []

@@ -1,14 +1,15 @@
 """Benchmark the five retrieval configurations on the Russian MIRACL dev set.
 
-The pool is the positive and negative passages MIRACL ships inline with each
-dev query, so no multi-GB corpus download is needed. It is a shared-pool
-benchmark, not full-corpus retrieval; see results.md for what that means.
+Evaluate M dev queries against a corpus of all their qrels documents plus
+random distractors drawn from the dev split, up to --subset documents. Only
+the small dev download is needed, not the 9.5M passage corpus.
 """
 
 from __future__ import annotations
 
 import argparse
 import platform
+import random
 import time
 from pathlib import Path
 
@@ -26,24 +27,51 @@ CONFIGS = [
 ]
 
 
-def load_miracl_subset(subset: int | None):
+def select_documents(all_docids, forced, subset_size: int, seed: int) -> list:
+    """Pick the corpus: every qrels doc, padded with random distractors to N.
+
+    The qrels documents must be indexed or their queries score zero for every
+    method, so they go in first; if there are more of them than N, N is raised.
+    """
+    forced = set(forced)
+    target = subset_size
+    if len(forced) > target:
+        print(f"relevant docs ({len(forced)}) exceed --subset {subset_size}; raising N")
+        target = len(forced)
+
+    rng = random.Random(seed)
+    distractors = [d for d in all_docids if d not in forced]
+    rng.shuffle(distractors)
+    keep = list(forced) + distractors[: target - len(forced)]
+    if len(keep) < target:
+        print(f"only {len(keep)} unique dev passages available, below --subset {target}")
+    return keep
+
+
+def load_miracl_subset(num_queries: int, subset_size: int, seed: int):
     from datasets import load_dataset
 
     ds = load_dataset("miracl/miracl", "ru", split="dev", trust_remote_code=True)
-    if subset:
-        ds = ds.select(range(min(subset, len(ds))))
 
-    passages: dict[str, dict] = {}
-    queries = []
+    # every dev passage is a distractor candidate; sourcing them here keeps the
+    # benchmark to the small dev download rather than the full corpus
+    all_passages: dict[str, dict] = {}
     for row in ds:
-        relevant = set()
-        for p in row["positive_passages"]:
-            passages[p["docid"]] = {"title": p.get("title", ""), "text": p["text"]}
-            relevant.add(p["docid"])
-        for p in row["negative_passages"]:
-            passages.setdefault(p["docid"], {"title": p.get("title", ""), "text": p["text"]})
+        for p in row["positive_passages"] + row["negative_passages"]:
+            all_passages.setdefault(p["docid"], {"title": p.get("title", ""), "text": p["text"]})
+
+    selected = ds.select(range(min(num_queries, len(ds))))
+    queries = []
+    forced: set[str] = set()
+    for row in selected:
+        relevant = {p["docid"] for p in row["positive_passages"]}
+        forced |= relevant
         queries.append({"query": row["query"], "relevant": relevant})
-    return passages, queries
+
+    keep = select_documents(all_passages.keys(), forced, subset_size, seed)
+    passages = {docid: all_passages[docid] for docid in keep}
+    sample = {"n_relevant": len(forced), "seed": seed}
+    return passages, queries, sample
 
 
 def build_chunks(passages: dict[str, dict]):
@@ -121,7 +149,9 @@ def write_results(path, results, meta):
         "# MIRACL ru benchmark",
         "",
         f"- queries: {meta['queries']}",
-        f"- passages in pool: {meta['passages']}",
+        f"- documents: {meta['documents']}",
+        f"- relevant documents: {meta['relevant']}",
+        f"- rng seed: {meta['seed']}",
         f"- candidates per method: {meta['candidates']}",
         f"- hardware: {meta['hardware']}",
         f"- python: {meta['python']}",
@@ -142,7 +172,9 @@ def write_results(path, results, meta):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Run the MIRACL ru benchmark")
-    parser.add_argument("--subset", type=int, default=None, help="limit to first N dev queries")
+    parser.add_argument("--queries", type=int, default=100, help="dev queries to evaluate")
+    parser.add_argument("--subset", type=int, default=20000, help="target corpus size in documents")
+    parser.add_argument("--seed", type=int, default=13, help="rng seed for distractor sampling")
     parser.add_argument("--out", default="benchmarks/results.md")
     parser.add_argument("--candidates", type=int, default=200)
     parser.add_argument("--no-dense", action="store_true", help="BM25 configs only")
@@ -150,7 +182,7 @@ def main(argv=None):
     parser.add_argument("--batch-size", type=int, default=64)
     args = parser.parse_args(argv)
 
-    passages, queries = load_miracl_subset(args.subset)
+    passages, queries, sample = load_miracl_subset(args.queries, args.subset, args.seed)
     chunks, docid_to_int = build_chunks(passages)
 
     t0 = time.perf_counter()
@@ -165,7 +197,9 @@ def main(argv=None):
 
     meta = {
         "queries": len(queries),
-        "passages": len(passages),
+        "documents": len(passages),
+        "relevant": sample["n_relevant"],
+        "seed": sample["seed"],
         "candidates": args.candidates,
         "hardware": f"{platform.system()} {platform.machine()}",
         "python": platform.python_version(),

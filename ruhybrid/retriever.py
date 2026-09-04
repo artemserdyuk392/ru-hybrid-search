@@ -57,8 +57,6 @@ class HybridRetriever:
     def __init__(self, index: HybridIndex, k: int = RRF_K):
         self.index = index
         self.k = k
-        # TODO: RRF weights both methods equally; expose per-method weights for
-        # corpora where one side is clearly stronger.
 
     def search(self, query: str, top_k: int = 5) -> list[SearchHit]:
         if not query or not query.strip():

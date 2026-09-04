@@ -76,8 +76,6 @@ class HybridIndex:
     def _build_dense(self) -> None:
         import faiss
 
-        # TODO: IndexFlatIP is a brute-force scan; switch to IVF or HNSW to
-        # scale past roughly a million chunks.
         embs = self._encode([c.text for c in self.chunks], "passage: ")
         faiss_index = faiss.IndexFlatIP(embs.shape[1])
         faiss_index.add(embs)

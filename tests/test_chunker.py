@@ -1,15 +1,13 @@
 import re
 
-from ruhybrid.chunker import chunk_document
+from ruhybrid.chunker import Chunk, chunk_document
 
 
-def test_short_document_is_single_chunk_with_fields():
-    chunks = chunk_document(0, "Короткий текст про поиск.", title="T", source="src")
+def test_short_document_is_single_chunk():
+    chunks = chunk_document(0, "Короткий текст про поиск.")
     assert len(chunks) == 1
     assert chunks[0].doc_id == 0
     assert chunks[0].chunk_index == 0
-    assert chunks[0].title == "T"
-    assert chunks[0].source == "src"
 
 
 def test_long_document_is_split_with_overlap():
@@ -31,3 +29,10 @@ def test_document_exactly_at_window_is_one_chunk():
 
 def test_empty_document_yields_no_chunks():
     assert chunk_document(3, "   \n\n  ") == []
+
+
+def test_fields_propagate_and_roundtrip():
+    chunks = chunk_document(7, "some text", title="T", source="src")
+    assert chunks[0].title == "T"
+    assert chunks[0].source == "src"
+    assert Chunk.from_dict(chunks[0].to_dict()) == chunks[0]

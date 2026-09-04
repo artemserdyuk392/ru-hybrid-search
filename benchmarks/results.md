@@ -1,16 +1,19 @@
 # MIRACL ru benchmark
 
-Not run yet. Fill this in with `python benchmarks/run.py --subset N`.
-The script overwrites this file with real numbers, hardware and timings.
+Not run yet. Fill this in with `python benchmarks/run.py` (defaults: 100
+queries, 20000 documents). The script overwrites this file with real numbers,
+the exact sample, hardware and timings.
 
-The evaluation pool is the union of the positive and negative passages that
-MIRACL ships inline with each dev query (see the module docstring in run.py).
-It is a shared-pool benchmark, not full-corpus retrieval over the 9.5M ru
-passages, so absolute recall runs high; treat the numbers as relative
-comparisons between configurations, not as MIRACL leaderboard scores.
+The corpus is every qrels document of the evaluated queries plus random
+distractor passages drawn from the dev split, up to --subset documents. It is
+a shared-pool benchmark over the dev passages, not full-corpus retrieval over
+the 9.5M ru passages, so treat the numbers as relative comparisons between
+configurations, not as MIRACL leaderboard scores.
 
 - queries: TODO
-- passages in pool: TODO
+- documents: TODO
+- relevant documents: TODO
+- rng seed: TODO
 - candidates per method: 200
 - hardware: TODO
 - python: TODO
@@ -23,5 +26,5 @@ comparisons between configurations, not as MIRACL leaderboard scores.
 | hybrid-stem | - | - |
 | hybrid-stem+ngram | - | - |
 
-TODO: run on the full dev set (subset omitted) once a GPU box is free; the
-CPU e5 pass over the pool is the slow part.
+TODO: run on more queries once a GPU box is free; the CPU e5 pass over 20000
+passages is the slow part.
