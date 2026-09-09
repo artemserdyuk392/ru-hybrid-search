@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-bench = ["datasets>=2.14"]
+bench = ["datasets>=2.14", "scipy>=1.10"]
 dev = ["pytest>=7.0", "ruff>=0.4"]
 
 [project.scripts]

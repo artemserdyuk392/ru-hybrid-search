@@ -41,23 +41,44 @@ and "ускорение" to "ускорен", which never match. The shared 4-gr
 
 ## Benchmark
 
-Recall@100 and nDCG@10 on a Russian MIRACL dev sample, five configurations.
-Not run yet. Reproduce with `python benchmarks/run.py` (defaults: 100 queries,
-a 20000-document corpus); it writes real numbers, hardware and timings into
-`benchmarks/results.md`.
+Recall@10, MRR@10 and nDCG@10 on a Russian MIRACL dev sample, five
+configurations. Recall@100 is reported too, but it sits near 1.0 for every
+configuration and cannot separate them. Not run yet. Reproduce with `python
+benchmarks/run.py`; `--smoke` runs a fast sparse-only check. The script writes
+the full tables, per-metric significance and timings into `benchmarks/results.md`.
 
-| config | Recall@100 | nDCG@10 |
-| --- | --- | --- |
-| bm25-stem | - | - |
-| bm25-stem+ngram | - | - |
-| dense | - | - |
-| hybrid-stem | - | - |
-| hybrid-stem+ngram | - | - |
+| config | Recall@100 | Recall@10 | MRR@10 | nDCG@10 |
+| --- | --- | --- | --- | --- |
+| bm25-stem | - | - | - | - |
+| bm25-stem+ngram | - | - | - | - |
+| dense | - | - | - | - |
+| hybrid-stem | - | - | - | - |
+| hybrid-stem+ngram | - | - | - | - |
 
-The corpus is every qrels document of the evaluated queries plus random
-distractor passages drawn from the dev split, not the full 9.5M passage corpus,
-so the numbers compare configurations against each other rather than the MIRACL
-leaderboard.
+Data comes from `mteb/MIRACLReranking` (ru), which ships each query's reranking
+candidates as parquet, so no multi-GB corpus download is needed. `--negatives`
+chooses the pool: `own` keeps each query's own BM25-selected hard negatives (a
+reranking task), `other` replaces them with candidates from other queries (a
+retrieval task), and `mixed` (default) blends the two. The direction of the bias
+matters: because the hard negatives are already high-BM25-rank documents for
+their query, BM25 can barely separate relevant from non-relevant in the `own`
+pool, so that pool understates lexical methods and flatters dense. The n-gram
+bridge works when a document is found, not when candidates are reranked, so it
+can only show an effect in the `other` pool. None of these pools is the full
+9.5M corpus, so the task is easier than real MIRACL and absolute numbers are
+inflated; compare configurations within one pool, not against published MIRACL.
+
+For Recall@10, MRR@10 and nDCG@10, results.md reports each configuration's
+paired per-query difference against bm25-stem with a paired-bootstrap 95%
+interval, a Wilcoxon p, and a Holm-Bonferroni-corrected p_holm across the four
+comparisons. Those intervals reflect only the spread across these queries, not
+generalization to other corpora.
+
+Because whole-pool averages hide the n-gram effect, results.md also slices
+queries by query/document lexical overlap (no-overlap, low-overlap, rest) and
+reports the n-gram-vs-stem comparison per bucket, where the effect should be
+strongest at low overlap. It also records how often each metric hits its
+ceiling and warns when nDCG@10 is saturated.
 
 ## Install
 

@@ -1,6 +1,6 @@
 import math
 
-from ruhybrid.metrics import ndcg_at_k, recall_at_k
+from ruhybrid.metrics import mrr_at_k, ndcg_at_k, recall_at_k
 
 
 def test_recall_counts_relevant_in_topk():
@@ -32,3 +32,10 @@ def test_ndcg_with_no_relevant_is_zero():
 def test_ndcg_idcg_truncated_to_k_when_relevant_exceeds_k():
     # perfect ranking must score 1.0 even with more relevant docs than k
     assert math.isclose(ndcg_at_k([1, 2, 3, 4, 5], {1, 2, 3, 4, 5}, 2), 1.0)
+
+
+def test_mrr_uses_rank_of_first_relevant():
+    assert mrr_at_k([9, 3, 1], {3}, 10) == 0.5
+    assert mrr_at_k([1, 2, 3], {1}, 10) == 1.0
+    assert mrr_at_k([9, 8, 7], {1}, 10) == 0.0
+    assert mrr_at_k([9, 8, 1], {1}, 2) == 0.0

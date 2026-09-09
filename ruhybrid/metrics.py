@@ -1,4 +1,4 @@
-"""Retrieval metrics: Recall@k and nDCG@k, kept dependency-free on purpose."""
+"""Retrieval metrics: Recall@k, MRR@k and nDCG@k, kept dependency-free on purpose."""
 
 from __future__ import annotations
 
@@ -28,6 +28,13 @@ def recall_at_k(ranked: list, relevant, k: int) -> float:
         return 0.0
     hits = sum(1 for doc_id in ranked[:k] if _gain(relevant, doc_id) > 0)
     return hits / total
+
+
+def mrr_at_k(ranked: list, relevant, k: int) -> float:
+    for i, doc_id in enumerate(ranked[:k]):
+        if _gain(relevant, doc_id) > 0:
+            return 1.0 / (i + 1)
+    return 0.0
 
 
 def ndcg_at_k(ranked: list, relevant, k: int) -> float:
