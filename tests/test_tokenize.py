@@ -6,15 +6,15 @@ def _has_ngram(tokens):
 
 
 def test_long_russian_word_emits_stem_and_ngrams():
-    tokens = tokenize_document("ускорение")
+    tokens = tokenize_document("ускорение", ngram_size=4)
     assert "ускорен" in tokens
     assert _has_ngram(tokens)
     assert _NGRAM_PREFIX + "уско" in tokens
 
 
 def test_verb_and_noun_share_ngrams_not_stems():
-    query = set(tokenize_query("ускорить"))
-    doc = set(tokenize_document("ускорение"))
+    query = set(tokenize_query("ускорить", ngram_size=4))
+    doc = set(tokenize_document("ускорение", ngram_size=4))
     shared = query & doc
     assert shared, "verb and noun must share at least one token"
     # the stems differ; the overlap can only come from the character n-grams
@@ -22,19 +22,19 @@ def test_verb_and_noun_share_ngrams_not_stems():
 
 
 def test_english_word_has_only_a_stem():
-    tokens = tokenize_document("optimization")
+    tokens = tokenize_document("optimization", ngram_size=4)
     assert tokens
     assert not _has_ngram(tokens)
 
 
 def test_short_russian_word_has_no_ngrams():
-    tokens = tokenize_document("кот")
+    tokens = tokenize_document("кот", ngram_size=4)
     assert "кот" in tokens
     assert not _has_ngram(tokens)
 
 
-def test_ngram_size_zero_disables_ngrams():
-    tokens = tokenize_document("ускорение", ngram_size=0)
+def test_ngrams_off_by_default():
+    tokens = tokenize_document("ускорение")
     assert "ускорен" in tokens
     assert not _has_ngram(tokens)
 

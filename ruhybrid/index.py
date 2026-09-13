@@ -18,7 +18,8 @@ DEFAULT_MODEL = "intfloat/multilingual-e5-small"
 
 @dataclass
 class IndexConfig:
-    ngram_size: int = 4
+    # n-grams default off: the benchmark shows they hurt on MIRACL (see README)
+    ngram_size: int = 0
     dense: bool = True
     model_name: str = DEFAULT_MODEL
     batch_size: int = 64

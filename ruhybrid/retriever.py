@@ -54,6 +54,13 @@ def _candidate_count(top_k: int) -> int:
 
 
 class HybridRetriever:
+    """Fuse the index's sparse and dense rankings with RRF.
+
+    Unweighted RRF uses ranks only, so it can drag the stronger retriever down
+    toward the weaker one. Measure bm25 and dense separately first; if one is
+    roughly 1.5-2x the other, prefer weighted fusion or a reranker.
+    """
+
     def __init__(self, index: HybridIndex, k: int = RRF_K):
         self.index = index
         self.k = k

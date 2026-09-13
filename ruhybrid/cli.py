@@ -99,7 +99,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_index = sub.add_parser("index", help="build an index from a JSONL corpus")
     p_index.add_argument("--input", required=True, help="corpus JSONL (text, title, source)")
     p_index.add_argument("--out", required=True, help="output index directory")
-    p_index.add_argument("--ngram-size", type=int, default=4)
+    p_index.add_argument("--ngram-size", type=int, default=0, help="0 disables n-grams (default)")
     p_index.add_argument("--no-dense", action="store_true", help="build BM25 only")
     p_index.add_argument("--model", default=DEFAULT_MODEL)
     p_index.add_argument("--batch-size", type=int, default=64)

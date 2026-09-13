@@ -65,18 +65,17 @@ def _base_tokens(text: str, ngram_size: int) -> list[str]:
         if word in stop:
             continue
         tokens.append(_stem(word))
-        # bridge the stemmer's split of verb/noun pairs (ускорить/ускорение)
-        # via shared character n-grams; only for long Russian words, since
-        # the stemmer already handles English inflection and ngrams just bloat.
-        # ngram_size <= 0 turns the bridge off (used for the stem-only baseline).
+        # optional bridge for the stemmer's split of verb/noun pairs
+        # (ускорить/ускорение) via shared character n-grams of long Russian
+        # words. Off by default (ngram_size 0): it lowered accuracy on MIRACL.
         if ngram_size > 0 and len(word) >= _NGRAM_MIN_LEN and _CYRILLIC.search(word):
             tokens.extend(_NGRAM_PREFIX + g for g in _char_ngrams(word, ngram_size))
     return tokens
 
 
-def tokenize_document(text: str, ngram_size: int = 4) -> list[str]:
+def tokenize_document(text: str, ngram_size: int = 0) -> list[str]:
     return _base_tokens(text, ngram_size)
 
 
-def tokenize_query(text: str, ngram_size: int = 4) -> list[str]:
+def tokenize_query(text: str, ngram_size: int = 0) -> list[str]:
     return _base_tokens(text, ngram_size)
