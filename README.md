@@ -50,13 +50,11 @@ bm25-stem nDCG@10:
 
 ## Install
 
-```bash
-pip install ru-hybrid-search
-```
-
-From source, in a virtualenv:
+Requires Python >= 3.10. Install from source in a virtualenv:
 
 ```bash
+git clone https://github.com/artemserdyuk392/ru-hybrid-search
+cd ru-hybrid-search
 python3 -m venv .venv
 . .venv/bin/activate
 pip install -e .

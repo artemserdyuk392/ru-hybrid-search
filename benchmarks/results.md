@@ -28,15 +28,13 @@ ones, and mixed sits between. own is the hardest and least saturated pool.
 
 ## mixed (20000 documents)
 
-CI and p were captured only for bm25-stem+ngram in this run.
-
 | config | nDCG@10 | delta vs bm25-stem | 95% CI | p |
 | --- | --- | --- | --- | --- |
 | bm25-stem | 0.6962 |  |  |  |
 | bm25-stem+ngram | 0.6510 | -0.0452 | [-0.0627, -0.0276] | <0.0001 |
-| dense | 0.8968 | +0.2006 | - | - |
-| hybrid-stem | 0.8533 | +0.1571 | - | - |
-| hybrid-stem+ngram | 0.8367 | +0.1405 | - | - |
+| dense | 0.8968 | +0.2006 | [+0.1816, +0.2198] | <0.0001 |
+| hybrid-stem | 0.8533 | +0.1571 | [+0.1447, +0.1698] | <0.0001 |
+| hybrid-stem+ngram | 0.8367 | +0.1405 | [+0.1243, +0.1569] | <0.0001 |
 
 ## other (20000 documents)
 
