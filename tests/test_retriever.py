@@ -55,3 +55,12 @@ def test_hit_carries_source_ranks():
     top = HybridRetriever(index).search("q", top_k=2)[0]
     assert top.bm25_rank == 1
     assert top.dense_rank == 2
+
+
+def test_default_k_lets_agreement_outrank_a_single_first_place():
+    # with k=60 a chunk both methods rank 4th beats one that only BM25 ranks
+    # 1st; a small k would hand the top slot to any single first place
+    chunks = [Chunk(i, 0, str(i), "") for i in range(7)]
+    index = FakeIndex(chunks, sparse=[0, 1, 2, 4], dense=[3, 5, 6, 4])
+    top = HybridRetriever(index).search("q", top_k=1)[0]
+    assert top.chunk.doc_id == 4
