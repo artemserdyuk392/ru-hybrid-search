@@ -64,3 +64,12 @@ def test_default_k_lets_agreement_outrank_a_single_first_place():
     index = FakeIndex(chunks, sparse=[0, 1, 2, 4], dense=[3, 5, 6, 4])
     top = HybridRetriever(index).search("q", top_k=1)[0]
     assert top.chunk.doc_id == 4
+
+
+def test_small_top_k_still_fetches_enough_candidates_to_rescue_a_deep_chunk():
+    # top_k=1 alone would ask each method for 4 candidates; the floor of 30 is
+    # what lets fusion see a chunk both methods rank 5th and put it first
+    chunks = [Chunk(i, 0, str(i), "") for i in range(9)]
+    index = FakeIndex(chunks, sparse=[0, 1, 2, 3, 8], dense=[4, 5, 6, 7, 8])
+    top = HybridRetriever(index, k=60).search("q", top_k=1)[0]
+    assert top.chunk.doc_id == 8
