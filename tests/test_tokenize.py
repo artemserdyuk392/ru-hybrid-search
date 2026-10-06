@@ -41,3 +41,13 @@ def test_ngrams_off_by_default():
 
 def test_stopwords_are_removed():
     assert tokenize_document("и в на под") == []
+
+
+def test_an_ngram_never_matches_a_word_stem():
+    # the query stem is also a 4-gram inside the document word; the two must stay
+    # distinct tokens, or a document matches a word it does not contain
+    query = set(tokenize_query("мост", ngram_size=4))
+    doc = set(tokenize_document("помостки", ngram_size=4))
+    assert query == {"мост"}
+    assert len(doc) > 1, "the document word must emit n-grams for this to mean anything"
+    assert query.isdisjoint(doc)
